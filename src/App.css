@@ -1,0 +1,221 @@
+
+body {  
+  font-family: Inter; 
+}
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+.visual_black {
+  background-color: black;
+  width: 100%;
+  height: 200px;
+  position: absolute;
+  z-index: -1;
+}
+
+.visual_gray {
+  background-color: rgb(48, 48, 48);
+  width: 100%;
+  height: 100vh;
+  z-index: -2;
+  position: fixed;
+}
+
+.content {
+  width: 736px;
+  padding-top: 0px;
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  grid-column: 100%;
+  grid-row: auto;
+}
+
+.logo {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 72px;
+  margin-bottom: 54px;
+}
+
+.content__textBox {
+  display: flex;
+  gap: 8px;
+
+}
+
+.content__textBox__text {
+  flex-grow: 1;
+  box-sizing: border-box;
+  height: 52px;
+  border: 1px solid rgb(13, 13, 13);
+  border-radius: 8px;
+  background: rgb(38, 38, 38);
+  padding-left: 16px;
+  color: white;
+}
+
+.content__textBox__button {
+  width: 125px;
+  height: 52px;
+  border-radius: 8px;
+  background: rgb(30, 111, 159);
+  border: none;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  color: rgb(242, 242, 242);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: 0%;
+  text-align: left;
+}
+
+.content__textBox__button_plusVisual {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 0px 0px 2px rgba(255, 255, 255, 1);
+  color: white;
+  line-height: 100%;
+  text-align: center;
+}
+
+.buttonStyle {
+  border: none;
+  margin-top: 24px;
+  margin-right: 16px;
+  border-radius: 8px;
+  background: rgb(29, 46, 69);
+  color: rgb(242, 242, 242);
+  
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: 0%;
+  text-align: left;
+  padding: 8px 16px;
+}
+
+.buttonStyle:hover {
+  background: rgb(30, 111, 159);
+}
+
+/* Общая информация о задачах */
+.content__info {
+
+  color: rgb(78, 168, 222);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 17px;
+  letter-spacing: 0%;
+  text-align: left;
+}
+
+.content__info_data {
+  color: rgb(217, 217, 217);
+  border-radius: 999px;
+  background: rgb(92, 92, 92);
+  padding: 2px 8px;
+  margin-left: 8px;
+}
+
+
+/* Блок с задачами */
+.content__tasks {
+  margin-top: 25px;
+}
+.content__tasks__task {
+  display: flex;
+  width: 736px;
+  height: 56px;
+  /* Автолейаут */
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 20px;
+  /* Графон */
+  box-sizing: border-box;
+  /* Gray 400 */
+  border: 1px solid rgb(51, 51, 51);
+  border-radius: 8px;
+  box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.06);
+  /* Gray 500 */
+  background: rgb(38, 38, 38);
+
+}
+/* Чекбокс */
+.content__tasks__task__checkbox_check {
+  appearance :none; 
+}
+.content__tasks__task__checkbox_img {
+  position:relative;
+  top: 2px;  
+}
+
+.content__tasks__task__description {
+  flex-grow: 1;
+  color: rgb(242, 242, 242);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: 0%;
+  text-align: left;  
+  background: none;  
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+.content__tasks__task__description_editable:focus {
+  outline: none;
+  box-shadow: 0px 1px 0px white;
+}
+
+
+.finished .content__tasks__task__description {
+  text-decoration: line-through;
+  color: gray;
+}
+.content__tasks__task__button_edit_active div svg g path{
+  fill:white;
+}
+.finished .content__tasks__task__button_edit {
+  display: none;
+}
+.content__tasks__task__button:hover div svg g path{
+  fill:white;
+}
+
+.content__tasks__task__button:hover div svg g {
+  fill:white;
+}
+
+
+.content__info {
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.content__tasks__task__description {
+  color: whitesmoke;
+}
+
+.content__tasks__task__button {
+  width: 10px;
+  height: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  background: none;
+  padding: 10px;
+}
+
+.hidden {
+  display: none
+}
