@@ -9,6 +9,7 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
+      time: new Date(),
       editID: null, //id редактируемого итема
       filterType: 0, // if типа предустановленных вариантов фильтрации тасков
       tasks: [
@@ -24,9 +25,8 @@ class App extends React.Component {
         },
         {
           name: 'Fill up the bird feeder',
-          isFinished: true,
+          isFinished: false,
           createTime: Date.now() - 30000,
-          endTime: Date.now(),
         },
         {
           name: 'Feed my Tamaghost',
@@ -40,40 +40,18 @@ class App extends React.Component {
         },
       ],
     };
+    setInterval(() => {
+      this.setState({ time: new Date() });
+    }, 1000);
   }
+
+  //Получаем количество выполненных задач
   getDoneTaskCount() {
-    let final = 0;
-    for (let i = 0; i < this.state.tasks.length; i++) {
-      if (this.state.tasks[i].isFinished) {
-        final++;
-      }
-    }
-    return final;
-  }
-
-  render() {
-    return (
-      <>
-        <div className="visual_black" />
-        <div className="visual_gray" />
-        <div className="content">
-          <img className="logo" src={logo} alt="" />
-          {this.taskListHeader()}
-
-          <div className="content__info">
-            <div>
-              Всего задач:
-              <span className="content__info_data">{this.state.tasks.length}</span>
-            </div>
-            <div>
-              Завершено:
-              <span className="content__info_data">{this.getDoneTaskCount() + ' из ' + this.state.tasks.length}</span>
-            </div>
-          </div>
-          <div className="content__tasks">{this.getTaskList()}</div>
-        </div>
-      </>
-    );
+    return this.state.tasks.reduce((accumulator, currentValue) => {
+      if (currentValue.isFinished) {
+        return ++accumulator;
+      } else return accumulator;
+    }, 0);
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -106,11 +84,7 @@ class App extends React.Component {
           </button>
           <button
             type="button"
-            className={
-              this.state.filterType === 2
-                ? 'content__navogationBtn_detele-ended buttonStyle'
-                : 'content__navogationBtn_detele-ended buttonStyle hidden'
-            }
+            className={`content__navogationBtn_detele-ended buttonStyle ${this.state.filterType === 2 ? '' : 'hidden'}`}
             onClick={this.clearAllFinishedTasks}
           >
             Очистить
@@ -122,29 +96,26 @@ class App extends React.Component {
 
   filterTaskList = (id) => () => {
     //Фильтруем таски по предустановленным категориям
-    let newState = this.state;
-    newState.filterType = id;
-    this.setState(newState);
+    this.setState({ filterType: id });
   };
 
   clearAllFinishedTasks = () => {
     //Зачищаем все готовые таски и сбрасываем фильтр
-    let newState = this.state;
-    newState.filterType = 0;
-    for (let i = 0; i < newState.tasks.length; i++) {
-      if (newState.tasks[i].isFinished) {
-        newState.tasks.splice(i, 1);
+    let newData = this.state.tasks.slice(0);
+    for (let i = 0; i < newData.length; i++) {
+      if (newData[i].isFinished) {
+        newData.splice(i, 1);
         i--;
       }
     }
-    this.setState(newState);
+    this.setState({ tasks: newData, filterType: 0 });
   };
 
   addNewClick = (e) => {
     //Создание новой таски
     e.preventDefault();
     let data = document.querySelector('.content__textBox__text');
-    let newData = this.state.tasks;
+    let newData = this.state.tasks.slice(0);
     newData.push({
       name: data.value,
       isFinished: false,
@@ -156,59 +127,63 @@ class App extends React.Component {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //Формирование списка тасков
   getTaskList() {
-    let finished = {};
-    let avaliable = {};
-    let arr = [];
-    for (let i = 0; i < this.state.tasks.length; i++) {
-      if (this.state.tasks[i].isFinished) {
-        finished[this.state.tasks[i].endTime] = [this.state.tasks[i].name, i];
-      } else {
-        avaliable[this.state.tasks[i].createTime] = [this.state.tasks[i].name, i];
-      }
+    let arrWithId = this.state.tasks.slice(0);
+    for (let i = 0; i < arrWithId.length; i++) {
+      arrWithId[i].id = i;
     }
     switch (this.state.filterType) {
       case 0: {
-        let avaliableSort = Object.keys(avaliable).sort().reverse();
-        for (let item of avaliableSort) {
-          arr.push(avaliable[item]);
-        }
-        let finishedSort = Object.keys(finished).sort().reverse();
-        for (let item of finishedSort) {
-          arr.push(finished[item]);
-        }
-        break;
+        return [].concat(this.getUnfinishedTaskList(arrWithId), this.getFinishedTaskList(arrWithId));
       }
       case 1: {
-        let avaliableSomeSort = Object.keys(avaliable).sort().reverse();
-        for (let item of avaliableSomeSort) {
-          arr.push(avaliable[item]);
-        }
-        break;
+        return this.getUnfinishedTaskList(arrWithId);
       }
       case 2: {
-        let finishedSomeSort = Object.keys(finished).sort().reverse();
-        for (let item of finishedSomeSort) {
-          arr.push(finished[item]);
-        }
-        break;
+        return this.getFinishedTaskList(arrWithId);
       }
       default: {
         break;
       }
     }
-    let finalArr = [];
-    for (let i = 0; i < arr.length; i++) {
-      finalArr.push(this.newTask(arr[i][0], arr[i][1]));
-    }
-    return finalArr;
   }
+  //Вспомогательный методы для getTaskList() — получаем списки завершенных и активных задач
+  getFinishedTaskList(arr) {
+    return arr
+      .filter((item) => item.isFinished)
+      .sort(function (a, b) {
+        if (a.endTime > b.endTime) {
+          return -1;
+        }
+        if (a.endTime < b.endTime) {
+          return 1;
+        }
+        return 0;
+      })
+      .map((item) => this.newTask(item.name, item.id));
+  }
+  getUnfinishedTaskList(arr) {
+    return arr
+      .filter((item) => !item.isFinished)
+      .sort(function (a, b) {
+        if (a.createTime > b.createTime) {
+          return -1;
+        }
+        if (a.createTime < b.createTime) {
+          return 1;
+        }
+        return 0;
+      })
+      .map((item) => this.newTask(item.name, item.id));
+  }
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   newTask(string, id) {
     //Создаем новый итем таски для листа
-    let itemClass = 'content__tasks__task finished task_id' + id;
-    let itemClass2 = 'content__tasks__task task_id' + id;
     let item = (
-      <form className={this.state.tasks[id].isFinished ? itemClass : itemClass2} onSubmit={this.updateTaskDescription}>
+      <form
+        className={`content__tasks__task task_id${id} ${this.state.tasks[id].isFinished ? 'finished' : ''}`}
+        onSubmit={this.updateTaskDescription}
+      >
         <label className="content__tasks__task__checkbox">
           <input type="radio" className="content__tasks__task__checkbox_check" onChange={this.setTaskAsFinished(id)} />
           <img
@@ -219,7 +194,11 @@ class App extends React.Component {
         </label>
 
         {this.newTaskDescription(string, id)}
-        <button type="button" className={this.newTaskButton(id)} onClick={this.enterEditMode(id)}>
+        <button
+          type="button"
+          className={`content__tasks__task__button content__tasks__task__button_edit ${this.state.editID === id ? 'content__tasks__task__button_edit_active' : ''}`}
+          onClick={this.enterEditMode(id)}
+        >
           <div>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
               <defs>
@@ -238,16 +217,7 @@ class App extends React.Component {
             </svg>
           </div>
         </button>
-        <button
-          type="button"
-          className="content__tasks__task__button"
-          onClick={(e) => {
-            e.preventDefault();
-            let newData = this.state.tasks;
-            newData.splice(id, 1);
-            this.setState({ tasks: newData });
-          }}
-        >
+        <button type="button" className="content__tasks__task__button" onClick={this.deleteTaskByID(id)}>
           <div>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
               <defs>
@@ -270,6 +240,13 @@ class App extends React.Component {
     );
     return item;
   }
+  //Удаление одной таски по id (ивент кнопки удаления)
+  deleteTaskByID = (id) => (e) => {
+    e.preventDefault();
+    let newData = this.state.tasks.slice(0);
+    newData.splice(id, 1);
+    this.setState({ tasks: newData });
+  };
 
   newTaskDescription(string, id) {
     //Классы для описания таски
@@ -279,7 +256,7 @@ class App extends React.Component {
           type="text"
           className="content__tasks__task__description content__tasks__task__description_editable"
           onBlur={this.updateTaskDescription}
-          onMouseOver={this.getTitleCreateTime(id)}
+          title={this.getTitleCreateTime(id)}
         />
       );
     }
@@ -288,27 +265,19 @@ class App extends React.Component {
         type="text"
         value={string}
         className="content__tasks__task__description"
-        onMouseOver={this.getTitleCreateTime(id)}
+        title={this.getTitleCreateTime(id)}
       />
     );
-  }
-  newTaskButton(id) {
-    //Классы для кнопки редактирования описания таски
-    let leEditID = this.state.editID;
-    if (leEditID === id) {
-      return 'content__tasks__task__button content__tasks__task__button_edit content__tasks__task__button_edit_active';
-    }
-    return 'content__tasks__task__button content__tasks__task__button_edit';
   }
 
   setTaskAsFinished = (id) => (e) => {
     e.preventDefault();
     e.target.checked = false;
-    let newData = this.state;
-    if (!newData.tasks[id].isFinished) {
-      newData.tasks[id].isFinished = true;
-      newData.tasks[id].endTime = Date.now();
-      this.setState(newData);
+    let newData = Object.assign([], this.state.tasks);
+    if (!newData[id].isFinished) {
+      newData[id].isFinished = true;
+      newData[id].endTime = Date.now();
+      this.setState({ tasks: newData });
     }
   };
 
@@ -318,9 +287,7 @@ class App extends React.Component {
     let itemClass = '.task_id' + id;
     let item = document.querySelector(itemClass);
     let itemDescription = item.querySelector('.content__tasks__task__description');
-    let newState = this.state;
-    newState.editID = id;
-    this.setState(newState);
+    this.setState({ editID: id });
     setTimeout(() => {
       itemDescription.focus();
     }, 50);
@@ -328,20 +295,19 @@ class App extends React.Component {
 
   updateTaskDescription = (e) => {
     //Обновление описания таски (Работаем на ентер или на потерю фокуса итемом)
-    let newState = this.state;
-    let itemClass = '.task_id' + newState.editID;
-    let item = document.querySelector(itemClass);
+    e.preventDefault();
+    let newState = this.state.tasks.slice(0);
+    let item = document.querySelector(`.task_id${this.state.editID}`);
     let itemDescription = item.querySelector('.content__tasks__task__description');
-    newState.tasks[newState.editID].name = itemDescription.value;
-    newState.editID = undefined;
-    this.setState(newState);
+    newState[this.state.editID].name = itemDescription.value;
+    this.setState({ editID: undefined, tasks: newState });
     e.preventDefault();
   };
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //Окошко title при евенте ховера описания, отображаем актуальное время с момента создания таски
-  getTitleCreateTime = (id) => (event) => {
-    let time = (Date.now() - this.state.tasks[id].createTime) / 1000;
+  //Окошко title, отображаем актуальное время с момента создания таски
+  getTitleCreateTime = (id) => {
+    let time = Math.floor((Date.now() - this.state.tasks[id].createTime) / 1000);
     if (time > 60) {
       let min;
       let floorTime = Math.floor(time / 60);
@@ -352,20 +318,41 @@ class App extends React.Component {
       } else {
         min = 'минут';
       }
-      event.target.setAttribute('title', 'Создана ' + Math.floor(time / 60) + ' ' + min + ' назад');
+      return `Создана ${floorTime} ${min} назад`;
+    }
+    let sek;
+    if (time === 1) {
+      sek = 'секунду';
+    } else if (time < 5) {
+      sek = 'секунды';
     } else {
-      let sek;
-      let floorTime = Math.floor(time);
-      if (floorTime === 1) {
-        sek = 'секунду';
-      } else if (floorTime < 5) {
-        sek = 'секунды';
-      } else {
-        sek = 'секунд';
-      }
-      event.target.setAttribute('title', 'Создана ' + Math.floor(time) + ' ' + sek + ' назад');
+      sek = 'секунд';
+      return `Создана ${time} ${sek} назад`;
     }
   };
+  render() {
+    return (
+      <>
+        <div className="visual_black" />
+        <div className="visual_gray" />
+        <div className="content">
+          <img className="logo" src={logo} alt="" />
+          {this.taskListHeader()}
+          <div className="content__info">
+            <div>
+              Всего задач:
+              <span className="content__info_data">{this.state.tasks.length}</span>
+            </div>
+            <div>
+              Завершено:
+              <span className="content__info_data">{this.getDoneTaskCount() + ' из ' + this.state.tasks.length}</span>
+            </div>
+          </div>
+          <div className="content__tasks">{this.getTaskList()}</div>
+        </div>
+      </>
+    );
+  }
 }
 
 export default App;
