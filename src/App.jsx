@@ -54,45 +54,34 @@ class App extends React.Component {
     }, 0);
   }
 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //Голова листа| Поле добавления задачи, кнопки меню
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Голова листа| Поле добавления задачи, кнопки меню~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   taskListHeader() {
     return (
       <>
-        <form onSubmit={this.addNewClick}>
-          <div className="content__textBox">
-            <input className="content__textBox__text" type="text" placeholder="Добавить новую задачу..." />
-            <button type="submit" className="content__textBox__button">
-              <p>Добавить</p>
-              <div className="content__textBox__button_plusVisual">+</div>
-            </button>
-          </div>
-        </form>
-        <div>
-          <button type="button" className="content__navogationBtn_All buttonStyle" onClick={this.filterTaskList(0)}>
-            Все задачи
-          </button>
-          <button type="button" className="content__navogationBtn_Ended buttonStyle" onClick={this.filterTaskList(1)}>
-            В процессе
-          </button>
-          <button
-            type="button"
-            className="content__navogationBtn_Avaliable buttonStyle"
-            onClick={this.filterTaskList(2)}
-          >
-            Завершённые
-          </button>
-          <button
-            type="button"
-            className={`content__navogationBtn_detele-ended buttonStyle ${this.state.filterType === 2 ? '' : 'hidden'}`}
-            onClick={this.clearAllFinishedTasks}
-          >
-            Очистить
-          </button>
-        </div>
+        <TaskCreator createCall={this.addNewClick} />
+        <TaskButtonPanel
+          filterCall={this.filterTaskList}
+          clearFinishedCall={this.clearAllFinishedTasks}
+          filterType={this.state.filterType}
+        />
       </>
     );
   }
+
+  addNewClick = (e) => {
+    //Создание новой таски
+    e.preventDefault();
+    let data = document.querySelector('.content__textBox__text');
+    let newData = this.state.tasks.slice(0);
+    newData.push({
+      name: data.value,
+      isFinished: false,
+      createTime: Date.now(),
+    });
+    data.value = '';
+    this.setState({ tasks: newData });
+  };
 
   filterTaskList = (id) => () => {
     //Фильтруем таски по предустановленным категориям
@@ -110,136 +99,6 @@ class App extends React.Component {
     }
     this.setState({ tasks: newData, filterType: 0 });
   };
-
-  addNewClick = (e) => {
-    //Создание новой таски
-    e.preventDefault();
-    let data = document.querySelector('.content__textBox__text');
-    let newData = this.state.tasks.slice(0);
-    newData.push({
-      name: data.value,
-      isFinished: false,
-      createTime: Date.now(),
-    });
-    data.value = '';
-    this.setState({ tasks: newData });
-  };
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //Формирование списка тасков
-  getTaskList() {
-    let arrWithId = this.state.tasks.slice(0);
-    for (let i = 0; i < arrWithId.length; i++) {
-      arrWithId[i].id = i;
-    }
-    switch (this.state.filterType) {
-      case 0: {
-        return [].concat(this.getUnfinishedTaskList(arrWithId), this.getFinishedTaskList(arrWithId));
-      }
-      case 1: {
-        return this.getUnfinishedTaskList(arrWithId);
-      }
-      case 2: {
-        return this.getFinishedTaskList(arrWithId);
-      }
-      default: {
-        break;
-      }
-    }
-  }
-  //Вспомогательный методы для getTaskList() — получаем списки завершенных и активных задач
-  getFinishedTaskList(arr) {
-    return arr
-      .filter((item) => item.isFinished)
-      .sort(function (a, b) {
-        if (a.endTime > b.endTime) {
-          return -1;
-        }
-        if (a.endTime < b.endTime) {
-          return 1;
-        }
-        return 0;
-      })
-      .map((item) => this.newTask(item.name, item.id));
-  }
-  getUnfinishedTaskList(arr) {
-    return arr
-      .filter((item) => !item.isFinished)
-      .sort(function (a, b) {
-        if (a.createTime > b.createTime) {
-          return -1;
-        }
-        if (a.createTime < b.createTime) {
-          return 1;
-        }
-        return 0;
-      })
-      .map((item) => this.newTask(item.name, item.id));
-  }
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  newTask(string, id) {
-    //Создаем новый итем таски для листа
-    let item = (
-      <form
-        className={`content__tasks__task task_id${id} ${this.state.tasks[id].isFinished ? 'finished' : ''}`}
-        onSubmit={this.updateTaskDescription}
-      >
-        <label className="content__tasks__task__checkbox">
-          <input type="radio" className="content__tasks__task__checkbox_check" onChange={this.setTaskAsFinished(id)} />
-          <img
-            src={this.state.tasks[id].isFinished ? checkBoxOn : checkBoxOff}
-            alt=""
-            className="content__tasks__task__checkbox_img"
-          />
-        </label>
-
-        {this.newTaskDescription(string, id)}
-        <button
-          type="button"
-          className={`content__tasks__task__button content__tasks__task__button_edit ${this.state.editID === id ? 'content__tasks__task__button_edit_active' : ''}`}
-          onClick={this.enterEditMode(id)}
-        >
-          <div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
-              <defs>
-                <clipPath id="a">
-                  <path fill="#fff" fillOpacity="0" d="M0 0h24v24H0z" />
-                </clipPath>
-              </defs>
-              <path fill="none" d="M0 0h24v24H0z" />
-              <g clipPath="url(#a)">
-                <path
-                  fill="gray"
-                  fillRule="evenodd"
-                  d="m8.276 14.794 6.761-7.11-.942-.991-6.762 7.11v.99h.943Zm.553 1.402H6V13.22l7.623-8.016A.65.65 0 0 1 14.095 5a.65.65 0 0 1 .47.205l1.887 1.983a.72.72 0 0 1 .195.496.72.72 0 0 1-.195.496l-7.623 8.016ZM6 17.598h12V19H6v-1.402Z"
-                />
-              </g>
-            </svg>
-          </div>
-        </button>
-        <button type="button" className="content__tasks__task__button" onClick={this.deleteTaskByID(id)}>
-          <div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
-              <defs>
-                <clipPath id="a">
-                  <rect width="24" height="24" fill="#fff" fillOpacity="0" rx="4" />
-                </clipPath>
-              </defs>
-              <rect width="24" height="24" fill="none" rx="4" />
-              <g fill="gray" clipPath="url(#a)">
-                <path
-                  fillRule="evenodd"
-                  d="M12.872 9.985h1.33v5.522h-1.33V9.985ZM10.132 9.985h1.33v5.522h-1.33V9.985Z"
-                />
-                <path d="M18 7.167a.659.659 0 0 0-.126-.377.62.62 0 0 0-.316-.228.576.576 0 0 0-.177-.045h-3.412a2.144 2.144 0 0 0-.745-1.097A2.01 2.01 0 0 0 11.998 5a2.01 2.01 0 0 0-1.227.42 2.145 2.145 0 0 0-.745 1.097H6.614a.593.593 0 0 0-.165.027h-.015a.62.62 0 0 0-.327.251.66.66 0 0 0 .056.796.61.61 0 0 0 .358.2l.684 9.742c.01.38.158.741.412 1.013.255.271.6.434.964.454h6.83c.366-.02.71-.181.966-.453.255-.272.403-.634.413-1.014l.68-9.734a.607.607 0 0 0 .38-.213.652.652 0 0 0 .15-.419Zm-6.002-.952c.124 0 .247.026.362.079a.904.904 0 0 1 .3.223h-1.325a.898.898 0 0 1 .3-.224.866.866 0 0 1 .363-.078Zm3.414 11.575H8.58c-.079 0-.201-.133-.216-.344L7.691 7.81h8.613l-.674 9.635c-.015.211-.137.344-.218.344Z" />
-              </g>
-            </svg>
-          </div>
-        </button>
-      </form>
-    );
-    return item;
-  }
   //Удаление одной таски по id (ивент кнопки удаления)
   deleteTaskByID = (id) => (e) => {
     e.preventDefault();
@@ -247,28 +106,6 @@ class App extends React.Component {
     newData.splice(id, 1);
     this.setState({ tasks: newData });
   };
-
-  newTaskDescription(string, id) {
-    //Классы для описания таски
-    if (id === this.state.editID) {
-      return (
-        <input
-          type="text"
-          className="content__tasks__task__description content__tasks__task__description_editable"
-          onBlur={this.updateTaskDescription}
-          title={this.getTitleCreateTime(id)}
-        />
-      );
-    }
-    return (
-      <input
-        type="text"
-        value={string}
-        className="content__tasks__task__description"
-        title={this.getTitleCreateTime(id)}
-      />
-    );
-  }
 
   setTaskAsFinished = (id) => (e) => {
     e.preventDefault();
@@ -304,10 +141,256 @@ class App extends React.Component {
     e.preventDefault();
   };
 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //Окошко title, отображаем актуальное время с момента создания таски
-  getTitleCreateTime = (id) => {
-    let time = Math.floor((Date.now() - this.state.tasks[id].createTime) / 1000);
+  render() {
+    return (
+      <>
+        <div className="visual_black" />
+        <div className="visual_gray" />
+        <div className="content">
+          <img className="logo" src={logo} alt="" />
+          <TaskCreator createCall={this.addNewClick} />
+          <TaskButtonPanel
+            filterCall={this.filterTaskList}
+            clearFinishedCall={this.clearAllFinishedTasks}
+            filterType={this.state.filterType}
+          />
+          <TaskInfoPanel doneTaskCount={this.getDoneTaskCount()} taskCount={this.state.tasks.length} />
+          <TaskList
+            tasks={this.state.tasks.slice(0)}
+            filter={this.state.filterType}
+            description={this.updateTaskDescription}
+            setAsFinished={this.setTaskAsFinished}
+            editTask={this.newTaskDescription}
+            startEditTask={this.enterEditMode}
+            delete={this.deleteTaskByID}
+            editID={this.state.editID}
+          />
+        </div>
+      </>
+    );
+  }
+}
+
+class TaskCreator extends React.Component {
+  render() {
+    return (
+      <form onSubmit={this.props.createCall}>
+        <div className="content__textBox">
+          <input className="content__textBox__text" type="text" placeholder="Добавить новую задачу..." />
+          <button type="submit" className="content__textBox__button">
+            <p>Добавить</p>
+            <div className="content__textBox__button_plusVisual">+</div>
+          </button>
+        </div>
+      </form>
+    );
+  }
+}
+class TaskButtonPanel extends React.Component {
+  render() {
+    return (
+      <div>
+        <button type="button" className="content__navogationBtn_All buttonStyle" onClick={this.props.filterCall(0)}>
+          Все задачи
+        </button>
+        <button type="button" className="content__navogationBtn_Ended buttonStyle" onClick={this.props.filterCall(1)}>
+          В процессе
+        </button>
+        <button
+          type="button"
+          className="content__navigationBtn_Avaliable buttonStyle"
+          onClick={this.props.filterCall(2)}
+        >
+          Завершённые
+        </button>
+        <button
+          type="button"
+          className={`content__navogationBtn_detele-ended buttonStyle ${this.props.filterType === 2 ? '' : 'hidden'}`}
+          onClick={this.props.clearFinishedCall}
+        >
+          Очистить
+        </button>
+      </div>
+    );
+  }
+}
+class TaskInfoPanel extends React.Component {
+  render() {
+    return (
+      <div className="content__info">
+        <div>
+          Всего задач:
+          <span className="content__info_data">{this.props.taskCount}</span>
+        </div>
+        <div>
+          Завершено:
+          <span className="content__info_data">{this.props.doneTaskCount + ' из ' + this.props.taskCount}</span>
+        </div>
+      </div>
+    );
+  }
+}
+class TaskList extends React.Component {
+  getFinishedTaskList(arr) {
+    return arr
+      .filter((item) => item.isFinished)
+      .sort(function (a, b) {
+        if (a.endTime > b.endTime) {
+          return -1;
+        }
+        if (a.endTime < b.endTime) {
+          return 1;
+        }
+        return 0;
+      })
+      .map((item) => this.newTask(item));
+  }
+  getUnfinishedTaskList(arr) {
+    return arr
+      .filter((item) => !item.isFinished)
+      .sort(function (a, b) {
+        if (a.createTime > b.createTime) {
+          return -1;
+        }
+        if (a.createTime < b.createTime) {
+          return 1;
+        }
+        return 0;
+      })
+      .map((item) => this.newTask(item));
+  }
+  newTask(item) {
+    return (
+      <NewTask
+        isFinished={item.isFinished}
+        id={item.id}
+        string={item.name}
+        description={this.props.description}
+        setAsFinished={this.props.setAsFinished}
+        editTask={this.props.editTask}
+        startEditTask={this.props.startEditTask}
+        delete={this.props.delete}
+        editID={this.props.editID}
+        createTime={item.createTime}
+      />
+    );
+  }
+  render() {
+    let arrWithId = this.props.tasks.slice(0);
+    for (let i = 0; i < arrWithId.length; i++) {
+      arrWithId[i].id = i;
+    }
+    switch (this.props.filter) {
+      case 0: {
+        return (
+          <div className="content__tasks">
+            {[].concat(this.getUnfinishedTaskList(arrWithId), this.getFinishedTaskList(arrWithId))}
+          </div>
+        );
+      }
+      case 1: {
+        return <div className="content__tasks">{this.getUnfinishedTaskList(arrWithId)}</div>;
+      }
+      case 2: {
+        return <div className="content__tasks">{this.getFinishedTaskList(arrWithId)}</div>;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+}
+/*  isFinished={this.state.tasks[myid].isFinished}
+        this.props.id={myid}
+        this.props.string={str}
+        this.props.description={this.updateTaskDescription}
+        this.props.setAsFinished={this.setTaskAsFinished}
+        this.props.editTask={this.newTaskDescription}
+        this.props.startEditTask={this.enterEditMode}
+        this.props.delete={this.deleteTaskByID}
+        this.props.editID={this.state.editID}
+        this.props.createTime={this.state.tasks[myid].createTime}
+        */
+class NewTask extends React.Component {
+  render() {
+    return (
+      <form
+        className={`content__tasks__task task_id${this.props.id} ${this.props.isFinished ? 'finished' : ''}`}
+        onSubmit={this.props.description}
+      >
+        <label className="content__tasks__task__checkbox">
+          <input
+            type="radio"
+            className="content__tasks__task__checkbox_check"
+            onChange={this.props.setAsFinished(this.props.id)}
+          />
+          <img
+            src={this.props.isFinished ? checkBoxOn : checkBoxOff}
+            alt=""
+            className="content__tasks__task__checkbox_img"
+          />
+        </label>
+        <TaskDescription
+          id={this.props.id}
+          editableId={this.props.editID}
+          description={this.props.string}
+          updateTaskDescription={this.props.description}
+          titleCreateTime={this.props.createTime}
+        />
+        <button
+          type="button"
+          className={`content__tasks__task__button content__tasks__task__button_edit ${this.props.editID === this.props.id ? 'content__tasks__task__button_edit_active' : ''}`}
+          onClick={this.props.startEditTask(this.props.id)}
+        >
+          <div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+              <defs>
+                <clipPath id="a">
+                  <path fill="#fff" fillOpacity="0" d="M0 0h24v24H0z" />
+                </clipPath>
+              </defs>
+              <path fill="none" d="M0 0h24v24H0z" />
+              <g clipPath="url(#a)">
+                <path
+                  fill="gray"
+                  fillRule="evenodd"
+                  d="m8.276 14.794 6.761-7.11-.942-.991-6.762 7.11v.99h.943Zm.553 1.402H6V13.22l7.623-8.016A.65.65 0 0 1 14.095 5a.65.65 0 0 1 .47.205l1.887 1.983a.72.72 0 0 1 .195.496.72.72 0 0 1-.195.496l-7.623 8.016ZM6 17.598h12V19H6v-1.402Z"
+                />
+              </g>
+            </svg>
+          </div>
+        </button>
+        <button type="button" className="content__tasks__task__button" onClick={this.props.delete(this.props.id)}>
+          <div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+              <defs>
+                <clipPath id="a">
+                  <rect width="24" height="24" fill="#fff" fillOpacity="0" rx="4" />
+                </clipPath>
+              </defs>
+              <rect width="24" height="24" fill="none" rx="4" />
+              <g fill="gray" clipPath="url(#a)">
+                <path
+                  fillRule="evenodd"
+                  d="M12.872 9.985h1.33v5.522h-1.33V9.985ZM10.132 9.985h1.33v5.522h-1.33V9.985Z"
+                />
+                <path d="M18 7.167a.659.659 0 0 0-.126-.377.62.62 0 0 0-.316-.228.576.576 0 0 0-.177-.045h-3.412a2.144 2.144 0 0 0-.745-1.097A2.01 2.01 0 0 0 11.998 5a2.01 2.01 0 0 0-1.227.42 2.145 2.145 0 0 0-.745 1.097H6.614a.593.593 0 0 0-.165.027h-.015a.62.62 0 0 0-.327.251.66.66 0 0 0 .056.796.61.61 0 0 0 .358.2l.684 9.742c.01.38.158.741.412 1.013.255.271.6.434.964.454h6.83c.366-.02.71-.181.966-.453.255-.272.403-.634.413-1.014l.68-9.734a.607.607 0 0 0 .38-.213.652.652 0 0 0 .15-.419Zm-6.002-.952c.124 0 .247.026.362.079a.904.904 0 0 1 .3.223h-1.325a.898.898 0 0 1 .3-.224.866.866 0 0 1 .363-.078Zm3.414 11.575H8.58c-.079 0-.201-.133-.216-.344L7.691 7.81h8.613l-.674 9.635c-.015.211-.137.344-.218.344Z" />
+              </g>
+            </svg>
+          </div>
+        </button>
+      </form>
+    );
+  }
+}
+//this.props.id
+//this.props.editableId
+//this.props.description
+//this.props.updateTaskDescription
+//this.props.titleCreateTime
+class TaskDescription extends React.Component {
+  getTitleCreateTime = (createTime) => {
+    let time = Math.floor((Date.now() - createTime) / 1000);
     if (time > 60) {
       let min;
       let floorTime = Math.floor(time / 60);
@@ -331,26 +414,23 @@ class App extends React.Component {
     }
   };
   render() {
+    if (this.props.id === this.props.editableId) {
+      return (
+        <input
+          type="text"
+          className="content__tasks__task__description content__tasks__task__description_editable"
+          onBlur={this.props.updateTaskDescription}
+          title={this.getTitleCreateTime(this.props.titleCreateTime)}
+        />
+      );
+    }
     return (
-      <>
-        <div className="visual_black" />
-        <div className="visual_gray" />
-        <div className="content">
-          <img className="logo" src={logo} alt="" />
-          {this.taskListHeader()}
-          <div className="content__info">
-            <div>
-              Всего задач:
-              <span className="content__info_data">{this.state.tasks.length}</span>
-            </div>
-            <div>
-              Завершено:
-              <span className="content__info_data">{this.getDoneTaskCount() + ' из ' + this.state.tasks.length}</span>
-            </div>
-          </div>
-          <div className="content__tasks">{this.getTaskList()}</div>
-        </div>
-      </>
+      <input
+        type="text"
+        value={this.props.description}
+        className="content__tasks__task__description"
+        title={this.getTitleCreateTime(this.props.titleCreateTime)}
+      />
     );
   }
 }
