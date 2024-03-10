@@ -53,33 +53,14 @@ class App extends React.Component {
       } else return accumulator;
     }, 0);
   }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Голова листа| Поле добавления задачи, кнопки меню~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  taskListHeader() {
-    return (
-      <>
-        <TaskCreator createCall={this.addNewClick} />
-        <TaskButtonPanel
-          filterCall={this.filterTaskList}
-          clearFinishedCall={this.clearAllFinishedTasks}
-          filterType={this.state.filterType}
-        />
-      </>
-    );
-  }
-
-  addNewClick = (e) => {
+  addNewClick = (text) => {
     //Создание новой таски
-    e.preventDefault();
-    let data = document.querySelector('.content__textBox__text');
     let newData = this.state.tasks.slice(0);
     newData.push({
-      name: data.value,
+      name: text,
       isFinished: false,
       createTime: Date.now(),
     });
-    data.value = '';
     this.setState({ tasks: newData });
   };
 
@@ -108,8 +89,6 @@ class App extends React.Component {
   };
 
   setTaskAsFinished = (id) => (e) => {
-    e.preventDefault();
-    e.target.checked = false;
     let newData = Object.assign([], this.state.tasks);
     if (!newData[id].isFinished) {
       newData[id].isFinished = true;
@@ -171,12 +150,34 @@ class App extends React.Component {
   }
 }
 
+//Форма для создания новых задач toDo
 class TaskCreator extends React.Component {
+  constructor() {
+    super();
+    this.state = { val: '' };
+  }
+  //Обработка input
+  handleChangeValue = (e) => {
+    this.setState({ val: e.target.value });
+  };
+  //Обработка sumbit - создание новой таски
+  handleSumbit = (e) => {
+    e.preventDefault();
+    this.props.createCall(this.state.val);
+    this.setState({ val: '' });
+  };
+
   render() {
     return (
-      <form onSubmit={this.props.createCall}>
+      <form onSubmit={this.handleSumbit}>
         <div className="content__textBox">
-          <input className="content__textBox__text" type="text" placeholder="Добавить новую задачу..." />
+          <input
+            className="content__textBox__text"
+            type="text"
+            placeholder="Добавить новую задачу..."
+            onChange={this.handleChangeValue}
+            value={this.state.val}
+          />
           <button type="submit" className="content__textBox__button">
             <p>Добавить</p>
             <div className="content__textBox__button_plusVisual">+</div>
@@ -319,16 +320,17 @@ class NewTask extends React.Component {
         onSubmit={this.props.description}
       >
         <label className="content__tasks__task__checkbox">
-          <input
-            type="radio"
+          <button
+            type="button"
             className="content__tasks__task__checkbox_check"
-            onChange={this.props.setAsFinished(this.props.id)}
-          />
-          <img
-            src={this.props.isFinished ? checkBoxOn : checkBoxOff}
-            alt=""
-            className="content__tasks__task__checkbox_img"
-          />
+            onClick={this.props.setAsFinished(this.props.id)}
+          >
+            <img
+              src={this.props.isFinished ? checkBoxOn : checkBoxOff}
+              alt=""
+              className="content__tasks__task__checkbox_img"
+            />
+          </button>
         </label>
         <TaskDescription
           id={this.props.id}

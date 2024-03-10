@@ -149,12 +149,13 @@ body {
 
 }
 /* Чекбокс */
-.content__tasks__task__checkbox_check {
-  appearance :none; 
+.content__tasks__task__checkbox_check { 
+  visibility: hidden;
 }
 .content__tasks__task__checkbox_img {
   position:relative;
   top: 2px;  
+  visibility: visible;
 }
 
 .content__tasks__task__description {
