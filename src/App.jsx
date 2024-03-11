@@ -63,6 +63,11 @@ class App extends React.Component {
     });
     this.setState({ tasks: newData });
   };
+  editTaskContent = (id, text) => {
+    let newData = this.state.tasks.slice(0);
+    newData[id].name = text;
+    this.setState({ tasks: newData });
+  };
 
   filterTaskList = (id) => () => {
     //Фильтруем таски по предустановленным категориям
@@ -103,21 +108,23 @@ class App extends React.Component {
     let itemClass = '.task_id' + id;
     let item = document.querySelector(itemClass);
     let itemDescription = item.querySelector('.content__tasks__task__description');
-    this.setState({ editID: id });
     setTimeout(() => {
       itemDescription.focus();
     }, 50);
+    this.setState({ editID: id });
   };
 
   updateTaskDescription = (e) => {
-    //Обновление описания таски (Работаем на ентер или на потерю фокуса итемом)
+    //Убираем едитмод у таски (Работаем на ентер или на потерю фокуса итемом)
     e.preventDefault();
-    let newState = this.state.tasks.slice(0);
-    let item = document.querySelector(`.task_id${this.state.editID}`);
-    let itemDescription = item.querySelector('.content__tasks__task__description');
-    newState[this.state.editID].name = itemDescription.value;
-    this.setState({ editID: undefined, tasks: newState });
-    e.preventDefault();
+    this.setState({ editID: null });
+    setTimeout(() => {
+      console.log('Инициировали выполнение updateTaskDescription' + this.state.editID);
+    }, 50);
+  };
+
+  checkEditID = (id) => {
+    return this.state.editID === id ? 'content__tasks__task__button_edit_active' : '';
   };
 
   render() {
@@ -137,12 +144,14 @@ class App extends React.Component {
           <TaskList
             tasks={this.state.tasks.slice(0)}
             filter={this.state.filterType}
-            description={this.updateTaskDescription}
+            updateTaskDescription={this.updateTaskDescription}
             setAsFinished={this.setTaskAsFinished}
             editTask={this.newTaskDescription}
             startEditTask={this.enterEditMode}
             delete={this.deleteTaskByID}
             editID={this.state.editID}
+            editTaskContent={this.editTaskContent}
+            checkEditID={this.checkEditID}
           />
         </div>
       </>
@@ -260,19 +269,22 @@ class TaskList extends React.Component {
       })
       .map((item) => this.newTask(item));
   }
+
   newTask(item) {
     return (
       <NewTask
         isFinished={item.isFinished}
         id={item.id}
         string={item.name}
-        description={this.props.description}
+        updateTaskDescription={this.props.updateTaskDescription}
         setAsFinished={this.props.setAsFinished}
         editTask={this.props.editTask}
         startEditTask={this.props.startEditTask}
         delete={this.props.delete}
         editID={this.props.editID}
         createTime={item.createTime}
+        editTaskContent={this.props.editTaskContent}
+        checkEditID={this.props.checkEditID}
       />
     );
   }
@@ -301,23 +313,18 @@ class TaskList extends React.Component {
     }
   }
 }
-/*  isFinished={this.state.tasks[myid].isFinished}
-        this.props.id={myid}
-        this.props.string={str}
-        this.props.description={this.updateTaskDescription}
-        this.props.setAsFinished={this.setTaskAsFinished}
-        this.props.editTask={this.newTaskDescription}
-        this.props.startEditTask={this.enterEditMode}
-        this.props.delete={this.deleteTaskByID}
-        this.props.editID={this.state.editID}
-        this.props.createTime={this.state.tasks[myid].createTime}
-        */
+
 class NewTask extends React.Component {
+  handleChangeInput = (e) => {
+    e.preventDefault();
+    console.log('Меняем state итема ' + e.target.value + ' id = ' + this.props.id);
+    this.props.editTaskContent(this.props.id, e.target.value);
+  };
   render() {
     return (
       <form
         className={`content__tasks__task task_id${this.props.id} ${this.props.isFinished ? 'finished' : ''}`}
-        onSubmit={this.props.description}
+        onSubmit={this.props.updateTaskDescription}
       >
         <label className="content__tasks__task__checkbox">
           <button
@@ -336,12 +343,13 @@ class NewTask extends React.Component {
           id={this.props.id}
           editableId={this.props.editID}
           description={this.props.string}
-          updateTaskDescription={this.props.description}
+          handleSumbit={this.props.handleSumbit}
           titleCreateTime={this.props.createTime}
+          updateTaskDescription={this.props.updateTaskDescription}
         />
         <button
           type="button"
-          className={`content__tasks__task__button content__tasks__task__button_edit ${this.props.editID === this.props.id ? 'content__tasks__task__button_edit_active' : ''}`}
+          className={`content__tasks__task__button content__tasks__task__button_edit ${this.props.checkEditID(this.props.id)}`}
           onClick={this.props.startEditTask(this.props.id)}
         >
           <div>
@@ -387,7 +395,6 @@ class NewTask extends React.Component {
 }
 //this.props.id
 //this.props.editableId
-//this.props.description
 //this.props.updateTaskDescription
 //this.props.titleCreateTime
 class TaskDescription extends React.Component {
@@ -421,8 +428,8 @@ class TaskDescription extends React.Component {
         <input
           type="text"
           className="content__tasks__task__description content__tasks__task__description_editable"
+          onChange={this.props.handleChangeInput}
           onBlur={this.props.updateTaskDescription}
-          title={this.getTitleCreateTime(this.props.titleCreateTime)}
         />
       );
     }
