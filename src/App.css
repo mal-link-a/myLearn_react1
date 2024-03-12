@@ -23,7 +23,7 @@ body {
   position: fixed;
 }
 
-.content {
+.main {
   width: 736px;
   padding-top: 0px;
   margin-left: auto;
@@ -40,13 +40,13 @@ body {
   margin-bottom: 54px;
 }
 
-.content__textBox {
+.taskCreator {
   display: flex;
   gap: 8px;
 
 }
 
-.content__textBox__text {
+.taskCreator__textbox {
   flex-grow: 1;
   box-sizing: border-box;
   height: 52px;
@@ -57,7 +57,7 @@ body {
   color: white;
 }
 
-.content__textBox__button {
+.taskCreator__submitBtn {
   width: 125px;
   height: 52px;
   border-radius: 8px;
@@ -75,7 +75,7 @@ body {
   text-align: left;
 }
 
-.content__textBox__button_plusVisual {
+.visual_plusInCircle {
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -106,7 +106,7 @@ body {
 }
 
 /* Общая информация о задачах */
-.content__info {
+.listInfo {
 
   color: rgb(78, 168, 222);
   font-size: 14px;
@@ -114,9 +114,12 @@ body {
   line-height: 17px;
   letter-spacing: 0%;
   text-align: left;
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
 }
 
-.content__info_data {
+.listInfo__data {
   color: rgb(217, 217, 217);
   border-radius: 999px;
   background: rgb(92, 92, 92);
@@ -126,10 +129,10 @@ body {
 
 
 /* Блок с задачами */
-.content__tasks {
+.taskList {
   margin-top: 25px;
 }
-.content__tasks__task {
+.task {
   display: flex;
   width: 736px;
   height: 56px;
@@ -149,16 +152,16 @@ body {
 
 }
 /* Чекбокс */
-.content__tasks__task__checkbox_check { 
+.task__finisher_btn { 
   visibility: hidden;
 }
-.content__tasks__task__checkbox_img {
+.task__finisher_img {
   position:relative;
   top: 2px;  
   visibility: visible;
 }
 
-.content__tasks__task__description {
+.task__name {
   flex-grow: 1;
   color: rgb(242, 242, 242);
   font-size: 14px;
@@ -171,42 +174,31 @@ body {
   border: none;
   box-shadow: none;
 }
-.content__tasks__task__description_editable:focus {
+.task__name_editMode:focus {
   outline: none;
   box-shadow: 0px 1px 0px white;
 }
 
 
-.finished .content__tasks__task__description {
+.finished .task__name {
   text-decoration: line-through;
   color: gray;
 }
-.content__tasks__task__button_edit_active div svg g path{
+.button_white div svg g path{
   fill:white;
 }
-.finished .content__tasks__task__button_edit {
+.finished .task__button_edit {
   display: none;
 }
-.content__tasks__task__button:hover div svg g path{
+.task__button:hover div svg g path{
   fill:white;
 }
 
-.content__tasks__task__button:hover div svg g {
+.task__button:hover div svg g {
   fill:white;
 }
 
-
-.content__info {
-  margin-top: 25px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.content__tasks__task__description {
-  color: whitesmoke;
-}
-
-.content__tasks__task__button {
+.task__button {
   width: 10px;
   height: 10px;
   display: flex;
